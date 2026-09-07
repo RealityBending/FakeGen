@@ -94,7 +94,7 @@ var demographics_consent = {
                             "I understand that since the study is anonymous, it will be impossible to withdraw my data once completed.",
                             "I understand that my personal data will be handled in accordance with Data Protection legislation and the University's Privacy Notice.",
                             "I understand that de-identified data may be made publicly available through secured scientific repositories.",
-                            "Due to the explicit nature of some images, I confirm that I am 18 years of age or older.",
+                            "Due to the explicit nature of some images, I confirm that I am over 18 years of age or older.",
                             "I agree to follow the instructions and provide honest answers. Non-valid responses (random patterns, instructions not read) may result in withheld credit.",
                         ],
                         isRequired: true,
@@ -141,6 +141,7 @@ var demographics_questions = {
                         title: "What is your gender?",
                         name: "Gender",
                         type: "radiogroup",
+                        // Should change other to prefer to self-describe ? (for ethical approval)
                         choices: ["Male", "Female", "Other"],
                         isRequired: true,
                         colCount: 0,
@@ -151,7 +152,7 @@ var demographics_questions = {
                         name: "Age",
                         isRequired: true,
                         inputType: "number",
-                        min: 18,
+                        min: 0,
                         max: 100,
                         placeholder: "e.g., 21",
                     },
@@ -164,11 +165,26 @@ var demographics_questions = {
                         name: "Education",
                         type: "radiogroup",
                         choices: [
-                            { value: "Doctorate",         text: "University (doctorate)" },
-                            { value: "Master",            text: "University (master)" },
-                            { value: "Bachelor",          text: "University (bachelor)" },
-                            { value: "High school",       text: "High school" },
-                            { value: "Elementary school", text: "Elementary school" },
+                            {
+                                value: "Doctorate",
+                                text: "University (doctorate)",
+                            },
+                            {
+                                value: "Master",
+                                text: "University (master)", // "<sub><sup>or equivalent</sup></sub>",
+                            },
+                            {
+                                value: "Bachelor",
+                                text: "University (bachelor)", // "<sub><sup>or equivalent</sup></sub>",
+                            },
+                            {
+                                value: "High school",
+                                text: "High school",
+                            },
+                            {
+                                value: "Elementary school",
+                                text: "Elementary school",
+                            },
                         ],
                         showOtherItem: true,
                         otherText: "Other",
@@ -177,7 +193,8 @@ var demographics_questions = {
                         colCount: 1,
                     },
                     {
-                        visibleIf: "{Education} == 'Doctorate' || {Education} == 'Master' || {Education} == 'Bachelor'",
+                        visibleIf:
+                            "{Education} == 'Doctorate' || {Education} == 'Master' || {Education} == 'Bachelor'",
                         title: "What is your discipline?",
                         name: "Discipline",
                         type: "radiogroup",
@@ -199,7 +216,8 @@ var demographics_questions = {
                         otherPlaceholder: "Please specify",
                     },
                     {
-                        visibleIf: "{Education} == 'High school' || {Education} == 'Master' || {Education} == 'Bachelor'",
+                        visibleIf:
+                            "{Education} == 'High school' || {Education} == 'Master' || {Education} == 'Bachelor'",
                         title: "Are you currently a student?",
                         name: "Student",
                         type: "boolean",
@@ -235,7 +253,9 @@ var demographics_questions = {
                         title: "In which country are you currently living?",
                         name: "Country",
                         type: "dropdown",
-                        choicesByUrl: { url: "https://surveyjs.io/api/CountriesExample" },
+                        choicesByUrl: {
+                            url: "https://surveyjs.io/api/CountriesExample",
+                        },
                         placeholder: "e.g., France",
                         isRequired: false,
                     },
@@ -245,6 +265,8 @@ var demographics_questions = {
                 elements: [
                     {
                         title: "What sexual orientation do you identify with?",
+                        description:
+                            "These questions are important to understand the results in the latter part of the experiment.",
                         name: "SexualOrientation",
                         type: "radiogroup",
                         choices: ["Heterosexual", "Homosexual", "Bisexual"],
@@ -255,7 +277,24 @@ var demographics_questions = {
                         colCount: 1,
                     },
                     {
-                        title: "I am currently…",
+                        visibleIf:
+                            "{Gender} == 'Other' || {SexualOrientation} == 'Bisexual' || {SexualOrientation} == 'Other'",
+                        title: "Which types of images do you find the most arousing?",
+                        description:
+                            "The following tasks will involve erotic images, please specify which category of images you would prefer to see.",
+                        name: "StimuliChoice",
+                        type: "radiogroup",
+                        choices: [
+                            "Women (and heterosexual couples)",
+                            "Men (and heterosexual couples)",
+                            "Only women (and lesbian couples)",
+                            "Only men (and gay couples)",
+                        ],
+                        isRequired: true,
+                        colCount: 1,
+                    },
+                    {
+                        title: "I am currently...",
                         name: "SexualStatus",
                         type: "radiogroup",
                         choices: [
@@ -274,8 +313,11 @@ var demographics_questions = {
             },
         ],
     },
-    data: { screen: "demographic_questions" },
+    data: {
+        screen: "demographic_questions",
+    },
 }
+
 
 // End-of-experiment feedback ========================================================
 var experiment_feedback = {
