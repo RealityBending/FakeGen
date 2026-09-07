@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- Title shown in browser tab -->
+        <title>Experiment</title>
+
+        <!-- Load jsPsych -->
+        <script src="https://unpkg.com/jspsych@8.1.0"></script>
+        <link href="https://unpkg.com/jspsych@8.1.0/css/jspsych.css" rel="stylesheet" type="text/css" />
+
+        <!-- Load plugins -->
+        <script src="https://unpkg.com/@jspsych/plugin-browser-check@1.0.3"></script>
+        <script src="https://unpkg.com/@jspsych/plugin-html-button-response@2.0.0"></script>
+        <script src="https://unpkg.com/@jspsych/plugin-preload@2.0.0"></script>
+        <script src="https://unpkg.com/@jspsych/plugin-image-keyboard-response@2.0.0"></script>
+        <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.0.0"></script>
+        <script src="https://unpkg.com/@jspsych/plugin-fullscreen@2.0.0"></script>
+        <script src="https://unpkg.com/@jspsych/plugin-survey@2.0.0"></script>
+        <link rel="stylesheet" href="https://unpkg.com/@jspsych/plugin-survey@2.0.0/css/survey.css" />
+
+        <!-- DataPipe – save data online -->
+        <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe@0.4.0"></script>
+
+        <!-- Custom scripts -->
+        <script src="stimuli_selection/stimuli_list.js"></script>
+        <script src="demographics.js"></script>
+        <script src="fiction.js"></script>
+
+        <!-- CSS -->
+        <style>
+            .narrow-text {
+                max-width: 50%;
+            }
+
+            /* Colour-coded rating scale used in Phase 2 */
+            .colored-scale .sd-rating__item:nth-child(3) { background-color: #ef9a9a; }
+            .colored-scale .sd-rating__item:nth-child(4) { background-color: #ffab91; }
+            .colored-scale .sd-rating__item:nth-child(5) { background-color: #ffe082; }
+            .colored-scale .sd-rating__item:nth-child(6) { background-color: #fff59d; }
+            .colored-scale .sd-rating__item:nth-child(7) { background-color: #e6ee9c; }
+            .colored-scale .sd-rating__item:nth-child(8) { background-color: #c5e1a5; }
+            .colored-scale .sd-rating__item:nth-child(9) { background-color: #a5d6a7; }
+        </style>
+    </head>
+
+    <body></body>
+
+    <script>
+        // ── DataPipe experiment ID ──────────────────────────────────────
+        // TODO: Replace the placeholder below with the ID generated
+        //       in the DataPipe (https://pipe.jspsych.org/) interface.
+        var DATAPIPE_ID = "PLACEHOLDER"
+
+        // ── jsPsych initialisation ──────────────────────────────────────
+        var jsPsych = initJsPsych({
+            show_progress_bar: true,
+            message_progress_bar: "Progress",
+            on_finish: function () {
+                if (finished_experiment) {
+                    if (jsPsych.data.urlVariables()["exp"] == "prolific") {
+                        // TODO: replace with your Prolific completion code
+                        window.location = "https://app.prolific.com/submissions/complete?cc=XXXXXXXX"
+                    } else {
+                        window.location = "https://realitybending.github.io/research/#participate"
+                    }
+                }
+            },
+        })
+
+        var finished_experiment = false
+        var timeline = []
+        var stimuli = []   // will be populated by fiction_preloadstims → assignCondition()
+
+        participant_ID = jsPsych.randomization.randomID(10)
+
+        // ── Demographics ────────────────────────────────────────────────
+        timeline.push(demographics_browser_info)
+        timeline.push(demographics_consent)
+        timeline.push(demographics_questions)
+        timeline.push(fiction_preloadstims)
+
+
+        // Main task (fullscreen) ===========================================
+        // timeline.push(fullscreen_on)
+
+        timeline.push({
+            timeline: [fiction_instructions],
+            on_finish() {
+
+                // Phase A ----------------------------------------------------
+                timeline.push({
+                    timeline_variables: stimuli.slice(0, Math.ceil(stimuli.length / 2)),
+                    timeline: [
+                        fiction_fixation,
+                        fiction_ratings,
+                    ],
+                })
+
+                // Mid-experiment break
+                timeline.push(fiction_break)
+
+    
+                // Phase B  --------------------------------------------------
+                timeline.push({
+                    timeline_variables: stimuli.slice(Math.ceil(stimuli.length / 2), stimuli.length),
+                    timeline: [
+                        fiction_fixation,
+                        fiction_ratings,
+                    ],
+                })
+
+                // Phase feedback
+
+
+                // End-of-experiment feedback
+                timeline.push(experiment_feedback)
+
+                // Debriefing
+                timeline.push(demographics_debriefing)
+
+                // Save final data
+                timeline.push({
+                    type: jsPsychPipe,
+                    action: "save",
+                    experiment_id: DATAPIPE_ID,
+                    filename: `${participant_ID}.csv`,
+                    data_string: () => jsPsych.data.get().csv(),
+                    on_finish: function () { finished_experiment = true },
+                })
+
+                // Exit fullscreen and show end screen
+                timeline.push(fullscreen_off)
+                timeline.push(demographics_endscreen)
+            },
+        })
+
+        // ── Run ─────────────────────────────────────────────────────────
+        jsPsych.run(timeline)
+    </script>
+</html>
