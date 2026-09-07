@@ -20,27 +20,34 @@ function assignCondition_erotic(erotic_stimuli) {
         .values()[0]
     let gender    = demographic_data.response.Gender
     let sexuality = demographic_data.response.SexualOrientation
+    let choice    = demographic_data.response.StimuliChoice
 
     let stimuliCategory = []
-    if (sexuality === "Heterosexual") {
+    if (choice) {
+        if (choice === "Women (and heterosexual couples)") {
+            stimuliCategory = ["Female", "Opposite-sex Couple"]
+        } else if (choice === "Men (and heterosexual couples)") {
+            stimuliCategory = ["Male", "Opposite-sex Couple"]
+        } else if (choice === "Only women (and lesbian couples)") {
+            stimuliCategory = ["Female", "Female Couple"]
+        } else if (choice === "Only men (and gay couples)") {
+            stimuliCategory = ["Male", "Male Couple"]
+        }
+    } else if (sexuality === "Heterosexual") {
         if (gender === "Male") {
             stimuliCategory = ["Female", "Opposite-sex Couple"]
         } else if (gender === "Female") {
             stimuliCategory = ["Male", "Opposite-sex Couple"]
-        } else {
-            stimuliCategory = ["Female", "Male", "Opposite-sex Couple"]
         }
     } else if (sexuality === "Homosexual") {
         if (gender === "Male") {
             stimuliCategory = ["Male", "Male Couple"]
         } else if (gender === "Female") {
             stimuliCategory = ["Female", "Female Couple"]
-        } else {
-            stimuliCategory = ["Female", "Male", "Female Couple", "Male Couple"]
         }
     } else {
-        // Bisexual or Other — show all subcategories
-        stimuliCategory = ["Female", "Male", "Opposite-sex Couple", "Female Couple", "Male Couple"]
+        console.error("Unexpected demographic data.")
+        return []
     }
 
     return erotic_stimuli.filter(s => stimuliCategory.includes(s.SubCategory))
@@ -97,7 +104,9 @@ var fiction_trialnumber = 1
 // ── Helper: build image HTML with badge overlay ───────────────
 // Returns a full HTML string: the image with a label badge in
 // the bottom-right corner, as if it is a watermark / source tag.
-function buildImageWithBadge(imagePath, condition, label) {
+// NOTE: this function is not used in the active trial timeline
+// (fiction_ratings handles its own badge inline).
+function buildImageWithBadge(imagePath, condition, label, category) {
     // Outer wrapper – centres the whole block on screen
     let html = "<div style='" +
         "display:flex; justify-content:center; align-items:center;" +
@@ -112,32 +121,36 @@ function buildImageWithBadge(imagePath, condition, label) {
         "/>"
 
     // Badge – bottom-right corner
-    if (condition === "AI") {
-        // Dark semi-transparent pill with the AI model logo
-        html += "<div style='" +
-            "position:absolute; bottom:12px; right:12px;" +
-            "background:rgba(176, 174, 174, 0.72);" +
-            "border-radius:10px; padding:6px 10px;" +
-            "display:flex; align-items:center; gap:6px;" +
-            "'>" +
-            "<img src='labels/" + label + ".png' style='" +
-            "max-height:36px; max-width:110px;"
-            "object-fit:contain; vertical-align:middle;" +
-            "'/>" +
-            "</div>"
-    if (category === "Chat") { badge_html = "" }
-    } else {
-        // Light badge for the "Photograph" condition
-        html += "<div style='" +
-            "position:absolute; bottom:12px; right:12px;" +
-            "background:rgb(255, 255, 255);" +
-            "border-radius:10px; padding:6px 14px;" +
-            "font-size:17px; font-weight:bold; color:#222;" +
-            "font-family:sans-serif;" +
-            "📷 " + label + "</div>"
+    var badge_html = ""
+    if (category !== "Chat") {
+        if (condition === "AI") {
+            badge_html =
+                "<div style='" +
+                "position:absolute; bottom:12px; right:12px;" +
+                "background:rgba(176, 174, 174, 0.72);" +
+                "border-radius:10px; padding:6px 10px;" +
+                "display:flex; align-items:center; gap:6px;" +
+                "'>" +
+                "<img src='labels/" + label + ".png' style='" +
+                "max-height:36px; max-width:110px; " +
+                "object-fit:contain; vertical-align:middle;" +
+                "'/>" +
+                "</div>"
+        } else {
+            var badge_icon = category === "Art" ? "🎨 " : "📷 "
+            badge_html =
+                "<div style='" +
+                "position:absolute; bottom:12px; right:12px;" +
+                "background:rgb(255, 255, 255);" +
+                "border-radius:10px; padding:6px 14px;" +
+                "font-size:17px; font-weight:bold; color:#222;" +
+                "font-family:sans-serif;" +
+                "'>" +
+                badge_icon + label + "</div>"
+        }
     }
 
-    html += "</div></div>"
+    html += badge_html + "</div></div>"
     return html
 }
 
@@ -146,7 +159,7 @@ var fiction_instructions = {
     type: jsPsychHtmlButtonResponse,
     css_classes: ["narrow-text"],
     stimulus:
-        "<h2>Part 1 / 2</h2>" +
+        "<h2>Task</h2>" +
         "<p>This study is conducted by researchers from the <b>University of Sussex</b>.</p>" +
         "<p>You will see a series of images drawn from four categories: <b>faces</b>, <b>artworks</b>, <b>chat screenshots</b>, and <b>erotic photographs</b>. " +
         "<p>The images will be <b>briefly shown on screen</b>. After each one, we will ask you to rate it on a dimension.</p>" +
@@ -193,36 +206,6 @@ var fiction_fixation = {
     },
 }
 
-// Image shown WITH label badge overlaid in the corner
-var fiction_showimage = {
-    type: jsPsychHtmlKeyboardResponse,
-    stimulus: function () {
-        return buildImageWithBadge(
-            "stimuli/" + jsPsych.evaluateTimelineVariable("stimulus"),
-            jsPsych.evaluateTimelineVariable("Condition"),
-            jsPsych.evaluateTimelineVariable("Label")
-        )
-    },
-    choices: ["s"],
-    trial_duration: 2000,
-    save_trial_parameters: { trial_duration: true },
-    data: function () {
-        return {
-            screen:        "fiction_image1",
-            window_width:  window.innerWidth,
-            window_height: window.innerHeight,
-            trial_number:  fiction_trialnumber,
-            category:      jsPsych.evaluateTimelineVariable("Category"),
-            condition:     jsPsych.evaluateTimelineVariable("Condition"),
-            label:         jsPsych.evaluateTimelineVariable("Label"),
-            item:          jsPsych.evaluateTimelineVariable("stimulus"),
-        }
-    },
-    on_finish: function () {
-        fiction_trialnumber += 1
-    },
-}
-
 // Category-specific question definitions
 // Each entry is a complete SurveyJS element object — used directly in the survey.
 var category_questions = {
@@ -259,7 +242,7 @@ var category_questions = {
         maxRateDescription: "Very much",
         displayMode: "buttons",
     },
-    "Chat": { // change based on undergraduates findings
+    "Chat": {
         type: "rating",
         name: "PartnerTrust",
         title: "I can trust the interaction partner.",
@@ -302,7 +285,6 @@ var fiction_ratings = {
         }
         if (category === "Chat") { badge_html = "" }
 
-
         var image_html =
             "<div style='text-align:center; margin-bottom:12px;'>" +
             "<div style='position:relative; display:inline-block;'>" +
@@ -315,8 +297,7 @@ var fiction_ratings = {
             goNextPageAutomatic: true,
             showQuestionNumbers: false,
             showNavigationButtons: false,
-            title:
-                "",
+            title: "",
             pages: [
                 {
                     elements: [
