@@ -65,16 +65,21 @@ var demographics_consent = {
                             Please contact us if you have any questions (see contact details below).</p>
 
                             <p align='left'><b>Why have I been invited and what will I do?</b><br>
-                            The goal is to study how <b>labels and context affect the way we perceive images</b>.
-                            You will be shown a series of images (faces, artworks, chat screenshots, and erotic photographs)
-                            paired with labels indicating whether they were produced by an AI model or taken as a photograph.
-                            You will then complete a few rating tasks and questionnaires.
-                            The whole experiment will take approximately <b style='color:green;'>~20 min</b>.
+                            The goal is to study how different categories of images make us feel and think.
+                            You will be shown a series of images (faces, artworks, chat screenshots, and erotic photographs) and asked to rate them on different dimensions (e.g., beauty, arousal).
+                            The whole experiment will take approximately <b style='color:green;'>~XX min</b>.
                             Please ensure you are in a <b>quiet environment</b> and can complete it in one sitting.</p>
 
                             <p align='left'><b>What will happen to the results and my personal information?</b><br>
                             Results may be published in a scientific article. Your anonymity will be fully preserved.
                             <b>Please read and tick each consent statement below carefully.</b></p>
+
+                            <p align='left'><b>Contact for Further Information</b><br>
+                            If you have any problems, concerns or questions about this study, you should get in touch with Dr Dominique Makowski (<i style='color:DodgerBlue;'>d.makowski@sussex.ac.uk</i>) or Ana Neves (<i style='color:DodgerBlue;'>a.neves@sussex.ac.uk</i>). 
+                            If you have any concerns about the way in which the study has been conducted, you should contact the SEMSET Faculty Research Ethics Committee at <i style='color:DodgerBlue;'>frecsemset@sussex.ac.uk</i>.               
+                            
+                            <p align='left'><b>Insurance</b><br></p>
+                            University of Sussex has insurance in place to cover its legal liabilities in respect of this study.
 
                             <p align='left'><b>Consent</b></p>
                         `,
@@ -111,6 +116,7 @@ var demographics_consent = {
                         ],
                         isRequired: true,
                     },
+                    
                 ],
             },
         ],
