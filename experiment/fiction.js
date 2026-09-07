@@ -285,13 +285,23 @@ var fiction_ratings = {
         }
         if (category === "Chat") { badge_html = "" }
 
-        var image_html =
-            "<div style='text-align:center; margin-bottom:12px;'>" +
-            "<div style='position:relative; display:inline-block;'>" +
-            "<img src='stimuli/" + stimulus + "' style='" +
-            "max-height:50vh; max-width:80vw; object-fit:contain; display:block;'/>" +
-            badge_html +
-            "</div></div>"
+        // Chat images are scrollable so participants can read the full conversation.
+        // All other categories show a constrained image with a badge overlay.
+        var image_html
+        if (category === "Chat") {
+            image_html =
+                "<div style='max-height:65vh; overflow-y:auto; margin-bottom:12px; border:1px solid #ddd;'>" +
+                "<img src='stimuli/" + stimulus + "' style='max-width:80vw; display:block; margin:0 auto;'/>" +
+                "</div>"
+        } else {
+            image_html =
+                "<div style='text-align:center; margin-bottom:12px;'>" +
+                "<div style='position:relative; display:inline-block;'>" +
+                "<img src='stimuli/" + stimulus + "' style='" +
+                "max-height:50vh; max-width:80vw; object-fit:contain; display:block;'/>" +
+                badge_html +
+                "</div></div>"
+        }
 
         return {
             goNextPageAutomatic: true,
