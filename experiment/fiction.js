@@ -76,6 +76,50 @@ function assignCondition_label(stimuli_list) {
     return shuffleArray(shuffled)
 }
 
+
+// Assigns AI/Photo conditions and labels within each category block.
+// Block order (which category appears first) is shuffled per participant;
+// stimuli within each block are also shuffled. This ensures all images from
+// one category appear together before moving to the next.
+function assignCondition_label_blocks(stimuli_list) {
+    // Group stimuli by category
+    let categories = {}
+    for (let s of stimuli_list) {
+        let cat = s.Category
+        if (!categories[cat]) categories[cat] = []
+        categories[cat].push(Object.assign({}, s))
+    }
+
+    // Shuffle block order so category sequence varies across participants
+    let category_keys = shuffleArray(Object.keys(categories))
+
+    let result = []
+    for (let cat of category_keys) {
+        let group = shuffleArray(categories[cat])
+
+        // Build a label pool sized to this block
+        let label_pool = []
+        while (label_pool.length < group.length) {
+            label_pool = label_pool.concat(shuffleArray([...ai_label_names]))
+        }
+
+        // First half of block → AI, second half → Photo
+        for (let i = 0; i < group.length; i++) {
+            if (i < Math.ceil(group.length / 2)) {
+                group[i].Condition = "AI"
+                group[i].Label     = label_pool[i]
+            } else {
+                group[i].Condition = "Photo"
+                group[i].Label = group[i].Category === "Art"
+                    ? artist_names[Math.floor(Math.random() * artist_names.length)]
+                    : photograph[Math.floor(Math.random() * photograph.length)]
+            }
+        }
+        result = result.concat(group)
+    }
+    return result
+}
+
 var ai_label_names = ["chatgpt", "nanobanana", "midjourney", "recraft", "gemini"]
 
 var photograph = [
@@ -161,7 +205,7 @@ var fiction_instructions = {
     stimulus:
         "<h2>Task</h2>" +
         "<p>This study is conducted by researchers from the <b>University of Sussex</b>.</p>" +
-        "<p>You will see a series of images drawn from four categories: <b>faces</b>, <b>artworks</b>, <b>chat screenshots</b>, and <b>erotic photographs</b>. " +
+        "<p>You will see a series of images drawn from five categories: <b>faces</b>, <b>artworks</b>, <b>chat screenshots</b>, <b>erotic photographs</b>, and <b>negative images</b>. " +
         "<p>The images will be <b>briefly shown on screen</b>. After each one, we will ask you to rate it on a dimension.</p>" +
         "<p><b>Pay attention to each category as they each have their own rating.</b></p>" +
         "<p><b>Please respond based on your first impression.</b></p>" +
@@ -186,7 +230,7 @@ var fiction_preloadstims = {
         let filtered_erotic = assignCondition_erotic(erotic_stimuli)
 
         // 3. Combine and assign AI/Photo labels to everything
-        stimuli = assignCondition_label([...non_erotic_stimuli, ...filtered_erotic])
+        stimuli = assignCondition_label_blocks([...non_erotic_stimuli, ...filtered_erotic])
     },
 }
 
@@ -252,6 +296,17 @@ var category_questions = {
         rateCount: 7,
         minRateDescription: "Not at all",
         maxRateDescription: "Completely",
+        displayMode: "buttons",
+    },
+    "Negative": {
+        type: "rating",
+        name: "Negativity",
+        title: "How negative did this image make you feel?",
+        isRequired: true,
+        rateMin: 0,
+        rateMax: 6,
+        minRateDescription: "Not at all",
+        maxRateDescription: "Extremely negative",
         displayMode: "buttons",
     },
 }
