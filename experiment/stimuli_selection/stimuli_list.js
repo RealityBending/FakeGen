@@ -17,4 +17,8 @@ var stimuli_list = [
     // Values: "Female", "Male", "Opposite-sex Couple", "Female Couple", "Male Couple"
     { "stimulus": "erotic/Female_couple_012_v.jpg", "Category": "Erotic", "SubCategory": "Female Couple" },
     { "stimulus": "erotic/Male_couple_047_h.jpg",   "Category": "Erotic", "SubCategory": "Male Couple" },
+
+    // ── Negative ────────────────────────────────────────────
+    { "stimulus": "negative/Animals_001_h.JPG",  "Category": "Negative" },
+    { "stimulus": "negative/People_217_h.JPG",  "Category": "Negative" },
 ]
